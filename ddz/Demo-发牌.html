@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>斗地主-发牌</title>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+  </head>
+
+  <body>
+    <dl>
+      <dt>甲</dt><dd></dd>
+      <dt>乙</dt><dd></dd>
+      <dt>丙</dt><dd></dd>
+      <dt>底</dt><dd></dd>
+    </dl>
+    <input id="sort" type="button" value="排序" />
+    <input id="refresh" type="button" value="重新发牌" />
+    <script>
+      /**
+       *  Object: Poker
+       *  此对象，封装扑克牌的基础属性和方法
+       * */
+      var Poker = {
+        poker : {},
+        cards : [],
+        //传说中的花色
+        sign : ['♠', '<span style="color:red">♥</span>', '♣', '<span style="color:red">♦</span>'],
+        //牌面数值
+        value : ['2', 'A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3'],
+        /**
+         * Function: Poker.init(Number n)
+         * arguments:
+         *  Number: n, n代表是几副牌
+         * return: void
+         * use: 将根据传入的值去自动生成几副牌
+         */
+        init : function(n) {
+          var i = 0,
+              len_v = this.value.length,
+              cards = [new Card('Red', 'Joker', 1), new Card('Black', 'Joker', 2)];
+          n = n || 1;
+          for (; i < len_v; i++) {
+            var j = 0, len_s = this.sign.length;
+            for (; j < len_s; j++) {
+              cards.push(new Card(this.sign[j], this.value[i], cards.length + 1));
+            }
+          }
+          this.cards = cards;
+          while (n-- > 1) {
+            this.cards = this.cards.concat(cards);
+          }
+          this.random();
+          this.show();
+        },
+        show : function() {
+          $('dd:nth-of-type(1)').html(this.poker.a.toString());
+          $('dd:nth-of-type(2)').html(this.poker.b.toString());
+          $('dd:nth-of-type(3)').html(this.poker.c.toString());
+          $('dd:nth-of-type(4)').html(this.poker.u.toString());
+        },
+        /**
+         * Function: Poker.random()
+         * arguments: null
+         * return: void
+         * use: 洗牌
+         */
+        random : function() {
+          var i = 0,
+              _cards = this.cards.slice(),
+              getRandomCard = function() {
+                return _cards.splice(Math.floor(Math.random() * (_cards.length - 1)), 1)[0];
+              };
+          this.poker = {
+            a : [],
+            b : [],
+            c : [],
+            u : []
+          };
+          while (_cards.length > 3) {
+            switch (i++ % 3) {
+              case 0:
+                this.poker.a.push(getRandomCard());
+                break;
+              case 1:
+                this.poker.b.push(getRandomCard());
+                break;
+              case 2:
+                this.poker.c.push(getRandomCard());
+                break;
+            }
+          }
+          this.poker.u = _cards;
+        },
+        /**
+         * Function: Poker.sortBy(Card a, Card b)
+         * arguments:
+         *  Card: a, b
+         * return: Number, 牌面比较后的结果
+         * use: 用于Array.sort(sortable);
+         */
+        sortBy : function(a, b) {
+          return a.order - b.order;
+        },
+        /**
+         * Function: Poker.sort()
+         * arguments: null
+         * return: void
+         * use: 用于给牌面排序并显示;
+         */
+        sort : function() {
+          this.poker.a.sort(this.sortBy);
+          this.poker.b.sort(this.sortBy);
+          this.poker.c.sort(this.sortBy);
+        }
+      },
+      /**
+       * Object: Card
+       * 此对象描述单张牌属性方法
+       */
+      Card = function(sign, value, order) {
+        this.sign = sign;
+        this.value = value;
+        this.order = order;
+        this.toString = function() {
+          return this.sign + this.value;
+        }
+      };
+
+      Poker.init();
+
+      $('#sort').live('click', function() {
+        Poker.sort();
+        Poker.show();
+      });
+      
+      $('#refresh').live('click', function() {
+        Poker.random();
+        Poker.show();
+      });
+    </script>
+  </body>
+</html>
