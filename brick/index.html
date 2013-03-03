@@ -97,7 +97,7 @@
                                     }
                                     return str;
                                 })(this.bd.width() / this.step, this.bd.height() / this.step, ''));
-                                this.log('start', '开始游戏');
+                                this.log('start', '<p>开始游戏</p><p>键盘 ← → 移动跳板</p><p>空格发射弹球</p>');
                             } else {
                                 this.init();
                             }
@@ -195,7 +195,7 @@
                             switch (type) {
                                 case 'start':
                                     this.overlay.show();
-                                    this.output.text(msg).click(function() {
+                                    this.output.html(msg).click(function() {
                                         ball.overlay.hide();
                                         ball.status = 2;
                                     }).show();
@@ -212,7 +212,7 @@
                                     })).show();*/
                                 case 'log':
                                     this.overlay.show();
-                                    this.output.text(msg).click(function() {
+                                    this.output.html(msg).click(function() {
                                         ball.overlay.hide();
                                         ball.start();
                                         ball.status = 2;
