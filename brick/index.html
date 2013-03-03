@@ -59,7 +59,7 @@
                         //surplus: this.total,
                         init: function() {
                             this.sideX = Math.floor(Math.random() * 2) * 2 - 1;
-                            this.status = 2;
+                            //this.status = 2;
                             this.board.css('left', '160px');
                             this.ele.css({
                                 'left': '190px',
@@ -70,7 +70,7 @@
                                 ball.bricks.append($('<div>').css('background-color', randomColor()));
                             });
                             this.surplus.text(this.total);
-                            this.times.text(1);
+                            this.times.text(0);
                             this.brickObjs = this.bricks.children();
                         },
                         start: function() {
@@ -197,6 +197,7 @@
                                     this.overlay.show();
                                     this.output.text(msg).click(function() {
                                         ball.overlay.hide();
+                                        ball.status = 2;
                                     }).show();
                                     break;
                                     /*this.overlay.append($('<div class="output"></div>').css({
@@ -214,6 +215,7 @@
                                     this.output.text(msg).click(function() {
                                         ball.overlay.hide();
                                         ball.start();
+                                        ball.status = 2;
                                     });
                                     break;
                             }
@@ -230,8 +232,10 @@
                     }
                     switch (e.which) {
                         case 32:
-                            ball.status = 1;
-                            ball.run();
+                            if (ball.status === 2) {
+                                ball.status = 1;
+                                ball.run();
+                            }
                             break;
                         case 37:
                             ball.move(-1);
