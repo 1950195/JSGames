@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>打砖块——趣味小游戏</title>
+        <style type="text/css">
+            #jsgame_box{margin:10px auto;width:400px;height:400px;background-color:#6CDFFF}
+            #jsgame_box .jsgame-hd{height:20px;line-height:20px;width:100%;color:#FFF;font-size:13px;background-color:rgba(0,0,0,0.8)}
+            #jsgame_box .jsgame-hd span{padding:0 10px 0 20px}
+            #jsgame_box .jsgame-bd{position:relative;height:380px;width:400px}
+            #jsgame_box .jsgame-bd .jsgame-board{position:absolute;width:80px;height:15px;left:160px;bottom:5px;background-color:#0A00AC}
+            #jsgame_box .jsgame-bd .jsgame-ball{position:absolute;width:20px;height:20px;left:190px;top:340px;border-radius:10px;background-color:#7B0088}
+            #jsgame_box .jsgame-bd .jsgame-bricks{position:absolute;top:20px;left:20px}
+            #jsgame_box .jsgame-bd .jsgame-bricks:after{visibility:hidden;display:block;font-size:0;content:" ";clear:both;height:0;zoom:1}
+            #jsgame_box .jsgame-bd .jsgame-bricks div{height:20px;width:60px;float:left;}
+            #jsgame_box .jsgame-bd .jsgame-overlay{position:absolute;text-align:center;width:400px;height:380px;left:0;top:0;background-color:rgba(0, 0, 0 ,0.5)}
+            #jsgame_box .jsgame-bd .jsgame-output{margin-top:160px;color:#FFF;display:inline-block;font-size:24px;font-weight:bold;cursor:pointer}
+            #jsgame_box .jsgame-bd table,#jsgame_box .jsgame-bd tbody,#jsgame_box .jsgame-bd tr,#jsgame_box .jsgame-bd td{border:0 none;padding:0;margin:0}
+            #jsgame_box .jsgame-bd td{width:10px;height:10px}
+            #jsgame_box .jsgame-bd td.gray{background-color:#DDD}
+        </style>
+    </head>
+    <body>
+        <div id="jsgame_box">
+            <div class="jsgame-hd">
+                <span>剩余：<i>18</i></span>
+                <span>次数：<i>99</i></span>
+            </div>
+            <div class="jsgame-bd">
+                <div class="jsgame-board"></div>
+                <div class="jsgame-ball"></div>
+                <div class="jsgame-bricks"></div>
+                <table border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class="jsgame-overlay">
+                    <div class="jsgame-output"></div>
+                </div>
+            </div>
+        </div>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script>
+            (function(window, $, undefined) {
+                var ball = {
+                        maxLeft: 400,
+                        maxTop: 340,
+                        brickWidth: 60,
+                        brickHeight: 20,
+                        boardWidth: 80,
+                        ballWidth: 20,
+                        ballHeight: 20,
+                        //ele: undefined,
+                        //sideX: 1,
+                        sideY: 1,
+                        step: 10, //px
+                        status: 0,
+                        total: 24,
+                        //surplus: this.total,
+                        init: function() {
+                            this.sideX = Math.floor(Math.random() * 2) * 2 - 1;
+                            this.status = 2;
+                            this.board.css('left', '160px');
+                            this.ele.css({
+                                'left': '190px',
+                                'top': '340px'
+                            });
+                            ball.bricks.empty();
+                            $(Array(this.total)).each(function() {
+                                ball.bricks.append($('<div>').css('background-color', randomColor()));
+                            });
+                            this.surplus.text(this.total);
+                            this.times.text(1);
+                            this.brickObjs = this.bricks.children();
+                        },
+                        start: function() {
+                            if (!this.ele) {
+                                this.bd = $('#jsgame_box .jsgame-bd');
+                                this.tb = $('#jsgame_box .jsgame-bd table tbody');
+                                this.ele = $('#jsgame_box .jsgame-ball');
+                                this.board = $('#jsgame_box .jsgame-board');
+                                this.bricks = $('#jsgame_box .jsgame-bricks');
+                                this.overlay = $('#jsgame_box .jsgame-overlay');
+                                this.output = $('#jsgame_box .jsgame-output');
+                                this.surplus = $('#jsgame_box .jsgame-hd i:eq(0)');
+                                this.times = $('#jsgame_box .jsgame-hd i:eq(1)');
+                                this.init();
+                                this.boardWidth = this.board.width();
+                                this.tb.append((function(x, y, str) {
+                                    str += '<tr>'
+                                    for (var i = 0; i < x; i++) {
+                                        str += '<td' + ((i + y) % 2 === 0 ? '' : ' class="gray"') + '></td>';
+                                    }
+                                    str += '</tr>';
+                                    if (--y > 0) {
+                                        return arguments.callee(x, y, str);
+                                    }
+                                    return str;
+                                })(this.bd.width() / this.step, this.bd.height() / this.step, ''));
+                                this.log('start', '开始游戏');
+                            } else {
+                                this.init();
+                            }
+                        },
+                        run: function() {
+                            if (this.status === 1) {
+                                var position = this.ele.position(),
+                                    boardLeft,
+                                    brickObj,
+                                    brickObjsTemp,
+                                    ballOffset;
+                                if (position.top === this.maxTop) {
+                                    boardLeft = this.board.position().left;
+                                    if (position.left < boardLeft - this.ballWidth / 2 || position.left > boardLeft + this.boardWidth + this.ballWidth / 2) {
+                                        this.log('log', '挑战失败，再来一次');
+                                        this.status = -1;
+                                        return;
+                                    }
+                                }
+                                ballOffset = this.ele.offset();
+                                brickObjsTemp = ball.brickObjs.filter(function(k, v) {
+                                    var brickOffset = $(v).offset(),
+                                        bLeft,
+                                        bRight,
+                                        bTop,
+                                        bBottom;
+                                    if (ball.sideX > 0) {
+                                        $(v).data('x', ballOffset.left + ball.ballWidth === brickOffset.left);
+                                        bLeft = ballOffset.left + ball.ballWidth >= brickOffset.left;
+                                        bRight = ballOffset.left < brickOffset.left + ball.brickWidth;
+                                    } else {
+                                        $(v).data('x', ballOffset.left === brickOffset.left + ball.brickWidth);
+                                        bLeft = ballOffset.left > brickOffset.left;
+                                        bRight = ballOffset.left <= brickOffset.left + ball.brickWidth;
+                                    }
+                                    if (ball.sideY > 0) {
+                                        $(v).data('y', ballOffset.top + ball.ballHeight === brickOffset.top);
+                                        bTop = ballOffset.top + ball.ballHeight >= brickOffset.top;
+                                        bBottom = ballOffset.top < brickOffset.top + ball.brickHeight;
+                                    } else {
+                                        $(v).data('y', ballOffset.top === brickOffset.top + ball.brickHeight);
+                                        bTop = ballOffset.top > brickOffset.top;
+                                        bBottom = ballOffset.top <= brickOffset.top + ball.brickHeight;
+                                    }
+                                    return !(bLeft && bRight && bTop && bBottom);
+                                });
+                                if (brickObjsTemp.length !== ball.brickObjs.length) {
+                                    if (brickObjsTemp.length === 0) {
+                                        this.log('log', '太牛了，要不要再来一次？');
+                                        return;
+                                    }
+                                    brickObj = ball.brickObjs.not(brickObjsTemp).css('visibility', 'hidden');
+                                    ball.brickObjs = brickObjsTemp;
+                                    this.surplus.text(brickObjsTemp.length);
+                                    if (brickObj.data('x')) {
+                                        this.sideX *= -1;
+                                    }
+                                    if (brickObj.data('y')) {
+                                        this.sideY *= -1;
+                                    }
+                                    
+                                } else {
+                                    if (position.left === 0 || position.left === this.maxLeft - this.ballWidth) {
+                                        this.sideX *= -1;
+                                    }
+                                    if (position.top === 0 || position.top === this.maxTop) {
+                                        this.sideY *= -1;
+                                    }
+                                }
+                                if (position.top === this.maxTop) {
+                                    this.times.text(parseInt(this.times.text(), 10) + 1);
+                                }
+                                this.ele.css({
+                                    'top': position.top + this.sideY,
+                                    'left': position.left + this.sideX
+                                });
+                            }
+                            window.setTimeout(function() {
+                                ball.run();
+                            }, 5);
+                        },
+                        move: function(side) {
+                            if (this.status > 0) {
+                                var boardLeft = this.board.position().left + side * this.step * 2;
+                                if (boardLeft < 0 || boardLeft > this.maxLeft - this.boardWidth) {
+                                    return;
+                                }
+                                if (this.status === 2) {
+                                    this.ele.css('left', this.ele.position().left + side * this.step * 2);
+                                }
+                                this.board.css('left', boardLeft);
+                            }
+                        },
+                        log: function(type, msg) {
+                            switch (type) {
+                                case 'start':
+                                    this.overlay.show();
+                                    this.output.text(msg).click(function() {
+                                        ball.overlay.hide();
+                                    }).show();
+                                    break;
+                                    /*this.overlay.append($('<div class="output"></div>').css({
+                                        'margin-top': '160px',
+                                        'color': '#FFF',
+                                        'display': 'inline-block',
+                                        'font-size': '24px',
+                                        'font-weight': 'bold',
+                                        'cursor': 'pointer'
+                                    }).text(msg).click(function() {
+                                        ball.overlay.empty().hide();
+                                    })).show();*/
+                                case 'log':
+                                    this.overlay.show();
+                                    this.output.text(msg).click(function() {
+                                        ball.overlay.hide();
+                                        ball.start();
+                                    });
+                                    break;
+                            }
+                        }
+                    },
+                    randomColor = function() {
+                        return '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).slice(-6);
+                    };
+
+                ball.start();
+                $('body').keydown(function(e) {
+                    if (e.shiftKey || e.ctrlKey || e.altKey) {
+                        return;
+                    }
+                    switch (e.which) {
+                        case 32:
+                            ball.status = 1;
+                            ball.run();
+                            break;
+                        case 37:
+                            ball.move(-1);
+                            break;
+                        case 39:
+                            ball.move(1);
+                            break;
+                    }
+                })
+            })(window, jQuery);
+        </script>
+    </body>
+</html>
