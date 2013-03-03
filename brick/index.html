@@ -145,7 +145,9 @@
                                     return !(bLeft && bRight && bTop && bBottom);
                                 });
                                 if (brickObjsTemp.length !== ball.brickObjs.length) {
-                                    brickObj = ball.brickObjs.not(brickObjsTemp).css('visibility', 'hidden');
+                                    brickObj = ball.brickObjs.not(brickObjsTemp).animate({
+                                        opacity: 0
+                                    });
                                     if (brickObjsTemp.length === 0) {
                                         this.log('log', '太牛了，要不要再来一次？');
                                         return;
@@ -200,16 +202,6 @@
                                         ball.status = 2;
                                     }).show();
                                     break;
-                                    /*this.overlay.append($('<div class="output"></div>').css({
-                                        'margin-top': '160px',
-                                        'color': '#FFF',
-                                        'display': 'inline-block',
-                                        'font-size': '24px',
-                                        'font-weight': 'bold',
-                                        'cursor': 'pointer'
-                                    }).text(msg).click(function() {
-                                        ball.overlay.empty().hide();
-                                    })).show();*/
                                 case 'log':
                                     this.overlay.show();
                                     this.output.html(msg).click(function() {
