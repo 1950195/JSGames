@@ -4,17 +4,17 @@
         <meta charset="utf-8">
         <title>打砖块——趣味小游戏</title>
         <style type="text/css">
-            #jsgame_box{margin:10px auto;width:400px;height:400px;background-color:#6CDFFF}
+            #jsgame_box{margin:10px auto;width:400px;height:300px;background-color:#FFA8C3}
             #jsgame_box .jsgame-hd{height:20px;line-height:20px;width:100%;color:#FFF;font-size:13px;background-color:rgba(0,0,0,0.8)}
             #jsgame_box .jsgame-hd span{padding:0 10px 0 20px}
-            #jsgame_box .jsgame-bd{position:relative;height:380px;width:400px}
+            #jsgame_box .jsgame-bd{position:relative;height:280px;width:400px}
             #jsgame_box .jsgame-bd .jsgame-board{position:absolute;width:80px;height:15px;left:160px;bottom:5px;background-color:#0A00AC}
             #jsgame_box .jsgame-bd .jsgame-ball{position:absolute;width:20px;height:20px;left:190px;top:340px;border-radius:10px;background-color:#7B0088}
             #jsgame_box .jsgame-bd .jsgame-bricks{position:absolute;top:20px;left:20px}
             #jsgame_box .jsgame-bd .jsgame-bricks:after{visibility:hidden;display:block;font-size:0;content:" ";clear:both;height:0;zoom:1}
             #jsgame_box .jsgame-bd .jsgame-bricks div{height:20px;width:60px;float:left;}
-            #jsgame_box .jsgame-bd .jsgame-overlay{position:absolute;text-align:center;width:400px;height:380px;left:0;top:0;background-color:rgba(0, 0, 0 ,0.5)}
-            #jsgame_box .jsgame-bd .jsgame-output{margin-top:160px;color:#FFF;display:inline-block;font-size:24px;font-weight:bold;cursor:pointer}
+            #jsgame_box .jsgame-bd .jsgame-overlay{position:absolute;text-align:center;width:400px;height:280px;left:0;top:0;background-color:rgba(0, 0, 0 ,0.5)}
+            #jsgame_box .jsgame-bd .jsgame-output{margin-top:80px;color:#FFF;display:inline-block;font-size:24px;font-weight:bold;cursor:pointer}
             #jsgame_box .jsgame-bd table,#jsgame_box .jsgame-bd tbody,#jsgame_box .jsgame-bd tr,#jsgame_box .jsgame-bd td{border:0 none;padding:0;margin:0}
             #jsgame_box .jsgame-bd td{width:10px;height:10px}
             #jsgame_box .jsgame-bd td.gray{background-color:#DDD}
@@ -44,10 +44,10 @@
             (function(window, $, undefined) {
                 var ball = {
                         maxLeft: 400,
-                        maxTop: 340,
+                        maxTop: 240,
                         brickWidth: 60,
                         brickHeight: 20,
-                        boardWidth: 80,
+                        //boardWidth: 80,
                         ballWidth: 20,
                         ballHeight: 20,
                         //ele: undefined,
@@ -63,7 +63,7 @@
                             this.board.css('left', '160px');
                             this.ele.css({
                                 'left': '190px',
-                                'top': '340px'
+                                'top': this.maxTop
                             });
                             ball.bricks.empty();
                             $(Array(this.total)).each(function() {
@@ -111,7 +111,7 @@
                                     ballOffset;
                                 if (position.top === this.maxTop) {
                                     boardLeft = this.board.position().left;
-                                    if (position.left < boardLeft - this.ballWidth / 2 || position.left > boardLeft + this.boardWidth + this.ballWidth / 2) {
+                                    if (position.left < boardLeft - this.ballWidth / 2 || position.left > boardLeft + this.boardWidth - this.ballWidth / 2) {
                                         this.log('log', '挑战失败，再来一次');
                                         this.status = -1;
                                         return;
@@ -183,12 +183,12 @@
                         },
                         move: function(side) {
                             if (this.status > 0) {
-                                var boardLeft = this.board.position().left + side * this.step * 2;
+                                var boardLeft = this.board.position().left + side * this.boardWidth / 2;
                                 if (boardLeft < 0 || boardLeft > this.maxLeft - this.boardWidth) {
                                     return;
                                 }
                                 if (this.status === 2) {
-                                    this.ele.css('left', this.ele.position().left + side * this.step * 2);
+                                    this.ele.css('left', this.ele.position().left + side * this.boardWidth / 2);
                                 }
                                 this.board.css('left', boardLeft);
                             }
