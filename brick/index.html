@@ -151,13 +151,13 @@
                                 if (brickObjsTemp.length !== ball.brickObjs.length) {
                                     brickObj = ball.brickObjs.not(brickObjsTemp).animate({
                                         opacity: 0
-                                    });
+                                    });;
+                                    this.surplus.text(brickObjsTemp.length);
                                     if (brickObjsTemp.length === 0) {
                                         this.log('log', '<p>太牛了，要不要再来一次？</p><p>键盘 ← → 移动跳板</p><p>空格发射弹球</p>');
                                         return;
                                     }
-                                    ball.brickObjs = brickObjsTemp;
-                                    this.surplus.text(brickObjsTemp.length);
+                                    this.brickObjs = brickObjsTemp;
                                     if (brickObj.data('x')) {
                                         this.sideX *= -1;
                                     }
