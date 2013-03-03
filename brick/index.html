@@ -145,11 +145,11 @@
                                     return !(bLeft && bRight && bTop && bBottom);
                                 });
                                 if (brickObjsTemp.length !== ball.brickObjs.length) {
+                                    brickObj = ball.brickObjs.not(brickObjsTemp).css('visibility', 'hidden');
                                     if (brickObjsTemp.length === 0) {
                                         this.log('log', '太牛了，要不要再来一次？');
                                         return;
                                     }
-                                    brickObj = ball.brickObjs.not(brickObjsTemp).css('visibility', 'hidden');
                                     ball.brickObjs = brickObjsTemp;
                                     this.surplus.text(brickObjsTemp.length);
                                     if (brickObj.data('x')) {
