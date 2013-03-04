@@ -56,6 +56,7 @@
                         step: 10, //px
                         status: 0,
                         total: 24,
+                        keyEnter: false,
                         //surplus: this.total,
                         init: function() {
                             this.sideX = Math.floor(Math.random() * 2) * 2 - 1;
@@ -98,6 +99,7 @@
                                     return str;
                                 })(this.bd.width() / this.step, this.bd.height() / this.step, ''));
                                 this.log('start', '<p>开始游戏</p><p>键盘 ← → 移动跳板</p><p>空格发射弹球</p>');
+                                this.status = 0;
                             } else {
                                 this.init();
                             }
@@ -116,6 +118,7 @@
                                             top: this.bd.height()
                                         }, function() {
                                             ball.log('log', '<p>挑战失败，再来一次吧！</p><p>键盘 ← → 移动跳板</p><p>空格发射弹球</p>');
+                                            ball.status = 0;
                                         });
                                         this.status = -1;
                                         return;
@@ -151,13 +154,14 @@
                                 if (brickObjsTemp.length !== ball.brickObjs.length) {
                                     brickObj = ball.brickObjs.not(brickObjsTemp).animate({
                                         opacity: 0
-                                    });;
-                                    this.surplus.text(brickObjsTemp.length);
+                                    });
                                     if (brickObjsTemp.length === 0) {
                                         this.log('log', '<p>太牛了，要不要再来一次？</p><p>键盘 ← → 移动跳板</p><p>空格发射弹球</p>');
+                                        this.status = 0;
                                         return;
                                     }
-                                    this.brickObjs = brickObjsTemp;
+                                    ball.brickObjs = brickObjsTemp;
+                                    this.surplus.text(brickObjsTemp.length);
                                     if (brickObj.data('x')) {
                                         this.sideX *= -1;
                                     }
@@ -187,28 +191,36 @@
                         },
                         move: function(side) {
                             if (this.status > 0) {
-                                var boardLeft = this.board.position().left + side * this.boardWidth / 2;
-                                if (boardLeft < 0 || boardLeft > this.maxLeft - this.boardWidth) {
-                                    return;
+                                if (side === 0) {
+                                    window.clearTimeout(this.timer);
+                                } else {
+                                    this.moveSide = side;
+                                    (function() {
+                                        var boardLeft = ball.board.position().left + ball.moveSide * ball.step;
+                                        if (boardLeft < 0 || boardLeft > ball.maxLeft - ball.boardWidth) {
+                                            return;
+                                        }
+                                        if (ball.status === 2) {
+                                            ball.ele.css('left', ball.ele.position().left + ball.moveSide * ball.step);
+                                        }
+                                        ball.board.css('left', boardLeft);
+                                        ball.timer = window.setTimeout(arguments.callee, 25);
+                                    })();
                                 }
-                                if (this.status === 2) {
-                                    this.ele.css('left', this.ele.position().left + side * this.boardWidth / 2);
-                                }
-                                this.board.css('left', boardLeft);
                             }
                         },
                         log: function(type, msg) {
                             switch (type) {
                                 case 'start':
                                     this.overlay.show();
-                                    this.output.html(msg).click(function() {
+                                    this.output.html(msg).one('click', function() {
                                         ball.overlay.hide();
                                         ball.status = 2;
                                     }).show();
                                     break;
                                 case 'log':
                                     this.overlay.show();
-                                    this.output.html(msg).click(function() {
+                                    this.output.html(msg).one('click', function() {
                                         ball.overlay.hide();
                                         ball.start();
                                         ball.status = 2;
@@ -223,9 +235,13 @@
 
                 ball.start();
                 $('body').keydown(function(e) {
+                    if (ball.keyEnter) {
+                        return;
+                    }
                     if (e.shiftKey || e.ctrlKey || e.altKey) {
                         return;
                     }
+                    ball.keyEnter = true;
                     switch (e.which) {
                         case 32:
                             if (ball.status === 2) {
@@ -241,7 +257,10 @@
                             ball.move(1);
                             break;
                     }
-                })
+                }).keyup(function(e) {
+                    ball.keyEnter = false;
+                    ball.move(0);
+                });
             })(window, jQuery);
         </script>
     </body>
