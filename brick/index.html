@@ -4,12 +4,12 @@
         <meta charset="utf-8">
         <title>打砖块——趣味小游戏</title>
         <style type="text/css">
-            #jsgame_box{margin:10px auto;width:400px;height:300px;background-color:#FFA8C3}
+            #jsgame_box{margin:10px auto;width:400px;height:300px;background-color:#F0FFEC}
             #jsgame_box .jsgame-hd{height:20px;line-height:20px;width:100%;color:#FFF;font-size:13px;background-color:rgba(0,0,0,0.8)}
             #jsgame_box .jsgame-hd span{padding:0 10px 0 20px}
             #jsgame_box .jsgame-bd{position:relative;height:280px;width:400px;overflow:hidden}
-            #jsgame_box .jsgame-bd .jsgame-board{position:absolute;width:80px;height:15px;left:160px;bottom:5px;background-color:#0A00AC}
-            #jsgame_box .jsgame-bd .jsgame-ball{position:absolute;width:20px;height:20px;left:190px;top:240px;border-radius:10px;background-color:#7B0088}
+            #jsgame_box .jsgame-bd .jsgame-board{position:absolute;width:70px;height:10px;left:160px;bottom:10px;border-radius:0 0 10px 10px;background-color:#7C3A00}
+            #jsgame_box .jsgame-bd .jsgame-ball{position:absolute;width:10px;height:10px;left:190px;top:250px;border-radius:5px;background-color:#7B0088}
             #jsgame_box .jsgame-bd .jsgame-bricks{position:absolute;top:20px;left:20px}
             #jsgame_box .jsgame-bd .jsgame-bricks:after{visibility:hidden;display:block;font-size:0;content:" ";clear:both;height:0;zoom:1}
             #jsgame_box .jsgame-bd .jsgame-bricks div{height:20px;width:60px;float:left;}
@@ -44,7 +44,7 @@
             (function(window, $, undefined) {
                 var ball = {
                         maxLeft: 400,
-                        maxTop: 240,
+                        maxTop: 250,
                         brickWidth: 60,
                         brickHeight: 20,
                         //boardWidth: 80,
