@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Step 0: Styling the Game Ground</title>
+    <style type="text/css">
+        ul {list-style: none; display: table-row;}
+        li {display: table-cell; height: 20px; width: 20px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc}
+        li.active, li.pile {background-color: green}
+        #playground ul:first-child li {border-top: 1px solid #ccc}
+        #playground ul li:first-child {border-left: 1px solid #ccc}
+    </style>
+</head>
+<body>
+    <header></header>
+    <article id="playground"></article>
+    <script type="text/javascript" src="../jquery-2.1.4.min.js"></script>
+    <script>
+        (function(window, document, $, undefined) {
+            var TOTAL_ROWS = 20,
+                TOTAL_COLS = 10;
+
+            $('#playground').html((function(rows, cols) {
+                var str = '',
+                    i = 0,
+                    j;
+
+                for (; i < rows; i++) {
+                    str += '<ul>';
+
+                    for (j = 0; j < cols; j++) {
+                        str += '<li></li>';
+                    }
+
+                    str += '</ul>';
+                }
+
+                return str;
+            })(TOTAL_ROWS, TOTAL_COLS));
+
+
+            // just to test the active block
+            $('#playground ul:eq(0) li:eq(4), #playground ul:eq(1) li:eq(4), #playground ul:eq(1) li:eq(5), #playground ul:eq(2) li:eq(5)').addClass('active');
+
+        })(window, document, jQuery);
+    </script>
+</body>
+</html>
