@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Step 3: Enumerate all Shapes</title>
+    <style type="text/css">
+        ul {list-style: none; display: table-row;}
+        li {display: table-cell; height: 20px; width: 20px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc}
+        li.active, li.pile {background-color: green}
+        #playground ul:first-child li {border-top: 1px solid #ccc}
+        #playground ul li:first-child {border-left: 1px solid #ccc}
+    </style>
+</head>
+<body>
+    <header></header>
+    <article id="playground"></article>
+    <script type="text/javascript" src="../jquery-2.1.4.min.js"></script>
+    <script>
+        (function(window, document, $, undefined) {
+            var TOTAL_ROWS = 20,
+                TOTAL_COLS = 10,
+                $playground = $('#playground'),
+                genPlayground = function() {
+                    var strHtml = '',
+                        i = 0,
+                        j;
+
+                    for (; i < TOTAL_ROWS; i++) {
+                        strHtml += '<ul>';
+
+                        for (j = 0; j < TOTAL_COLS; j++) {
+                            strHtml += '<li></li>';
+                        }
+
+                        strHtml += '</ul>';
+                    }
+
+                    $playground.html(strHtml);
+                },
+                clearPlayground = function() {
+                    $playground.find('.active').removeClass('active');
+                },
+                // x, y: (0, 0) is (first row, first col)
+                Block = function(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.drawing = function() {
+                        $playground.find('ul:eq(' + this.x + ') li:eq(' + this.y + ')').addClass('active');
+                    }
+                },
+                // blocks: Array of the block instance
+                Tetris = function(blocks) {
+                    this.blocks = blocks;
+                    this.drawing = function() {
+                        $.each(blocks, function(index, block) {
+                            block.drawing();
+                        });
+                    };
+                },
+                shapes = [
+                    [
+                        [[0, 4], [0, 5], [1, 4], [1, 5]]
+                    ],
+                    [
+                        [[0, 3], [0, 4], [0, 5], [0, 6]],
+                        [[0, 4], [1, 4], [2, 4], [3, 4]]
+                    ],
+                    [
+                        [[0, 4], [1, 4], [1, 5], [2, 5]],
+                        [[0, 4], [0, 5], [1, 3], [1, 4]]
+                    ],
+                    [
+                        [[0, 5], [1, 4], [1, 5], [2, 4]],
+                        [[0, 3], [0, 4], [1, 4], [1, 5]]
+                    ],
+                    [
+                        [[0, 3], [0, 4], [0, 5], [1, 3]],
+                        [[0, 4], [0, 5], [1, 5], [2, 5]],
+                        [[0, 5], [1, 3], [1, 4], [1, 5]],
+                        [[0, 4], [1, 4], [2, 4], [2, 5]]
+                    ],
+                    [
+                        [[0, 3], [0, 4], [0, 5], [1, 5]],
+                        [[0, 5], [1, 5], [2, 4], [2, 5]],
+                        [[0, 3], [1, 3], [1, 4], [1, 5]],
+                        [[0, 4], [0, 5], [1, 4], [2, 4]]
+                    ]
+                ],
+                shapeList = (function(list) {
+                    var shape = list.shift();
+
+                    if (list.length === 1) {
+                        return $.merge(shape, list[0]);
+                    } else {
+                        return $.merge(shape, arguments.callee(list));
+                    }
+                })(shapes.slice()),
+                convertShapeToBlocks = function(shape) {
+                    return $.map(shape, function(item) {
+                        return new Block(item[0], item[1]);
+                    })
+                };
+
+            genPlayground();
+
+            // just to test the active block
+            var index = 0;
+
+            setInterval(function() {
+                if (shapeList.length === index) {
+                    index = 0;
+                }
+
+                clearPlayground();
+                new Tetris(convertShapeToBlocks(shapeList[index++])).drawing();
+            }, 1000);
+
+        })(window, document, jQuery);
+    </script>
+</body>
+</html>
