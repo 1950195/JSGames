@@ -100,7 +100,7 @@
                     } else {
                         return $.merge(shape, arguments.callee(list));
                     }
-                })(shapes.slice()),
+                })($.extend(true, [], shapes)),
                 convertShapeToBlocks = function(shape) {
                     return $.map(shape, function(item) {
                         return new Block(item[0], item[1]);
