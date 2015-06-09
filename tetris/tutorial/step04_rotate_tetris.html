@@ -53,30 +53,31 @@
                 },
                 // blocks: Array of the block instance
                 Tetris = function(shape) {
-                    this.blocks = convertShapeToBlocks(shape);
+                    this.blocks = convertShapeModelToBlocks(shape.model);
                     this.index = shape.index;
                     this.group = shape.group;
-                    this.totalTypes = this.group.length;
+                    this.total = this.group.length;
                     this.drawing = function() {
                         $.each(this.blocks, function(index, block) {
                             block.drawing();
                         });
+                        return this;
                     };
                     this.cleaning = function() {
                         $.each(this.oldBlocks, function(index, block) {
                             block.cleaning();
                         });
+                        return this;
                     };
                     this.next = function() {
-                        if (this.index + 1 === this.totalTypes) {
+                        if (this.index + 1 === this.total) {
                             this.index = 0;
                         } else {
                             this.index++;
                         }
-                        this.oldBlocks = this.block;
-                        this.block = convertShapeToBlocks(this.group[this.index]);
-                        this.cleaning();
-                        this.drawing();
+                        this.oldBlocks = this.blocks;
+                        this.blocks = convertShapeModelToBlocks(this.group[this.index]);
+                        this.cleaning().drawing();
                     };
                 },
                 shapeModels = [
@@ -119,26 +120,32 @@
                         return {model: item, index: index, group: shapeModel};
                     });
                 }),
-                convertShapeToBlocks = function(shape) {
-                    return $.map(shape.model, function(item) {
+                convertShapeModelToBlocks = function(model) {
+                    return $.map(model, function(item) {
                         return new Block(item[0], item[1]);
-                    })
+                    });
                 };
 
             genPlayground();
 
             // just to test the active block
-            var index = 0;
+            var index = Math.floor(Math.random() * shapeList.length),
+                tetris = new Tetris(shapeList[index]).drawing();
 
-            setInterval(function() {
-                if (shapeList.length === index) {
-                    index = 0;
+
+            $(document).on('keydown', function(e) {
+                if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+
+                switch (e.keyCode) {
+                    case 38: //up
+                        tetris.next();
+                        break;
+                    case 40: //down
+                    case 37: //left
+                    case 39: //right
+                    default:
                 }
-
-                cleanPlayground();
-                new Tetris(shapeList[index++]).drawing();
-            }, 1000);
-
+            });
         })(window, document, jQuery);
     </script>
 </body>
