@@ -114,19 +114,11 @@
                         [[0, 4], [0, 5], [1, 4], [2, 4]]
                     ]
                 ],
-                shapeList = (function(list) {
-                    var shape = list.shift();
-
-                    shape = $.map(shape, function(item, index) {
-                        return {model: item, index: index, group: shape};
+                shapeList = $.map($.extend([], shapeModels), function(shapeModel) {
+                    return $.map(shapeModel, function(item, index) {
+                        return {model: item, index: index, group: shapeModel};
                     });
-
-                    if (list.length === 0) {
-                        return shape;
-                    } else {
-                        return $.merge(shape, arguments.callee(list));
-                    }
-                })($.extend(true, [], shapeModels)),
+                }),
                 convertShapeToBlocks = function(shape) {
                     return $.map(shape.model, function(item) {
                         return new Block(item[0], item[1]);
