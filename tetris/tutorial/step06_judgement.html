@@ -52,6 +52,10 @@
                         if (this.x < 0) return;
                         $playground.find('ul:eq(' + this.x + ') li:eq(' + this.y + ')').removeClass('active');
                     };
+                    this.pile = function() {
+                        if (this.x < 0) return;
+                        $playground.find('ul:eq(' + this.x + ') li:eq(' + this.y + ')').addClass('pile');
+                    };
                     this.moving = function(offsetX, offsetY) {
                         this.x = this.x + offsetX;
                         this.y = this.y + offsetY;
@@ -80,6 +84,7 @@
                     this.group = shape.group;
                     this.total = this.group.length;
                     this.offset = {x: 0, y: 0};
+                    this.isEnd = false;
                     this.drawing = function() {
                         $.each(this.blocks, function(index, block) {
                             block.drawing();
@@ -89,6 +94,12 @@
                     this.cleaning = function() {
                         $.each(this.blocks, function(index, block) {
                             block.cleaning();
+                        });
+                        return this;
+                    };
+                    this.pile = function() {
+                        $.each(this.blocks, function(index, block) {
+                            block.pile();
                         });
                         return this;
                     };
@@ -103,7 +114,13 @@
                         return this.drawing();
                     };
                     this.moving = function(offsetX, offsetY) {
-                        if (!this.validate(offsetX, offsetY)) return;
+                        if (!this.validate(offsetX, offsetY)) {
+                            if (offsetX > 0) {
+                                this.pile();
+                            }
+                            this.isEnd = true;
+                            return this;
+                        }
                         this.cleaning();
                         $.each(this.blocks, function(index, block) {
                             block.moving(offsetX, offsetY);
@@ -175,12 +192,13 @@
                 timer;
 
             (function() {
-                    tetris.moving(1, 0);
+                if (!tetris.moving(1, 0).isEnd) {
                     timer = setTimeout(arguments.callee, 500);
+                }
             })();
 
             $(document).on('keydown', function(e) {
-                if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+                if (tetris.isEnd || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
 
                 switch (e.keyCode) {
                     case 38: //up
@@ -192,6 +210,7 @@
                         break;
                     case 39: //right
                         tetris.moving(0, 1);
+                        break;
                     default:
                 }
             });
