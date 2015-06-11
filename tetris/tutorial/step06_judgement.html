@@ -103,22 +103,58 @@
                         });
                         return this;
                     };
+                    this.adapt = function() {
+                        var offsetY = this.offset.y,
+                            resetY = $.map(this.group[this.index], function(item) {
+                                var newY = item[1] + offsetY;
+                                if (newY >= TOTAL_COLS) {
+                                    return TOTAL_COLS - newY - 1;
+                                }
+                                if (newY < 0) {
+                                    return -newY;
+                                }
+                                return 0;
+                            }).sort(function(a, b) {
+                                return b - a;
+                            });
+
+                        this.offset.y += resetY[0] > 0 ? resetY[0] : resetY.pop();
+                        return this;
+                    };
                     this.next = function() {
+                        var index = this.index,
+                            offsetX = this.offset.x,
+                            offsetY = this.offset.y,
+                            newBlocks;
+
                         if (this.index + 1 === this.total) {
                             this.index = 0;
                         } else {
                             this.index++;
                         }
+
+                        this.adapt();
+                        newBlocks = convertShapeModelToBlocks(this.group[this.index], this.offset);
+
+                        if ($.grep(this.blocks, function(block) {
+                            return !block.validate(0, 0);
+                        }).length > 0) {
+                            this.index = index;
+                            this.offset.x = offsetX;
+                            this.offset.y = offsetY;
+                            return this;
+                        }
+
                         this.cleaning();
-                        this.blocks = convertShapeModelToBlocks(this.group[this.index], this.offset);
+                        this.blocks = newBlocks;
                         return this.drawing();
                     };
                     this.moving = function(offsetX, offsetY) {
                         if (!this.validate(offsetX, offsetY)) {
                             if (offsetX > 0) {
                                 this.pile();
+                                this.isEnd = true;
                             }
-                            this.isEnd = true;
                             return this;
                         }
                         this.cleaning();
@@ -130,11 +166,9 @@
                         return this.drawing();
                     };
                     this.validate = function(offsetX, offsetY) {
-                        var flag = 1;
-                        $.each(this.blocks, function(index, block) {
-                            flag *= block.validate(offsetX, offsetY);
-                        });
-                        return flag === 1;
+                        return $.grep(this.blocks, function(block) {
+                            return !block.validate(offsetX, offsetY);
+                        }).length === 0;
                     };
                 },
                 shapeModels = [
@@ -205,6 +239,8 @@
                         tetris.next();
                         break;
                     case 40: //down
+                        tetris.moving(1, 0);
+                        break;
                     case 37: //left
                         tetris.moving(0, -1);
                         break;
