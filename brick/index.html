@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>打砖块——趣味小游戏</title>
+        <style type="text/css">
+            #jsgame_box{margin:10px auto;width:400px;height:300px;background-color:#F0FFEC}
+            #jsgame_box .jsgame-hd{height:20px;line-height:20px;width:100%;color:#FFF;font-size:13px;background-color:rgba(0,0,0,0.8)}
+            #jsgame_box .jsgame-hd span{padding:0 10px 0 20px}
+            #jsgame_box .jsgame-bd{position:relative;height:280px;width:400px;overflow:hidden}
+            #jsgame_box .jsgame-bd .jsgame-board{position:absolute;width:70px;height:10px;left:160px;bottom:10px;border-radius:0 0 10px 10px;background-color:#7C3A00}
+            #jsgame_box .jsgame-bd .jsgame-ball{position:absolute;width:10px;height:10px;left:190px;top:250px;border-radius:5px;background-color:#7B0088}
+            #jsgame_box .jsgame-bd .jsgame-bricks{position:absolute;top:20px;left:20px}
+            #jsgame_box .jsgame-bd .jsgame-bricks:after{visibility:hidden;display:block;font-size:0;content:" ";clear:both;height:0;zoom:1}
+            #jsgame_box .jsgame-bd .jsgame-bricks div{height:20px;width:60px;float:left;}
+            #jsgame_box .jsgame-bd .jsgame-overlay{position:absolute;text-align:center;width:400px;height:280px;left:0;top:0;background-color:rgba(0, 0, 0 ,0.5)}
+            #jsgame_box .jsgame-bd .jsgame-output{text-decoration:underline;margin-top:80px;color:#FFF;display:inline-block;font-size:24px;font-weight:bold;cursor:pointer}
+            #jsgame_box .jsgame-bd table,#jsgame_box .jsgame-bd tbody,#jsgame_box .jsgame-bd tr,#jsgame_box .jsgame-bd td{border:0 none;padding:0;margin:0}
+            #jsgame_box .jsgame-bd td{width:10px;height:10px}
+            #jsgame_box .jsgame-bd td.gray{background-color:#DDD}
+        </style>
+    </head>
+    <body>
+        <div id="jsgame_box">
+            <div class="jsgame-hd">
+                <span>剩余：<i>18</i></span>
+                <span>次数：<i>99</i></span>
+            </div>
+            <div class="jsgame-bd">
+                <div class="jsgame-board"></div>
+                <div class="jsgame-ball"></div>
+                <div class="jsgame-bricks"></div>
+                <table border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class="jsgame-overlay">
+                    <div class="jsgame-output"></div>
+                </div>
+            </div>
+        </div>
+        <script src="http://libs.baidu.com/jquery/1.11.1/jquery.min.js"></script>
+        <script>
+            (function(window, $, undefined) {
+                var ball = {
+                        maxLeft: 400,
+                        maxTop: 250,
+                        brickWidth: 60,
+                        brickHeight: 20,
+                        //boardWidth: 80,
+                        ballWidth: 20,
+                        ballHeight: 20,
+                        //ele: undefined,
+                        //sideX: 1,
+                        //sideY: 1,
+                        step: 10, //px
+                        status: 0,
+                        total: 24,
+                        keyEnter: false,
+                        //surplus: this.total,
+                        init: function() {
+                            this.sideX = Math.floor(Math.random() * 2) * 2 - 1;
+                            this.sideY = 1;
+                            this.board.css('left', '160px');
+                            this.ele.css({
+                                'left': '190px',
+                                'top': this.maxTop
+                            });
+                            ball.bricks.empty();
+                            $(Array(this.total)).each(function() {
+                                ball.bricks.append($('<div>').css('background-color', randomColor()));
+                            });
+                            this.surplus.text(this.total);
+                            this.times.text(0);
+                            this.brickObjs = this.bricks.children();
+                        },
+                        start: function() {
+                            if (!this.ele) {
+                                this.bd = $('#jsgame_box .jsgame-bd');
+                                this.tb = $('#jsgame_box .jsgame-bd table tbody');
+                                this.ele = $('#jsgame_box .jsgame-ball');
+                                this.board = $('#jsgame_box .jsgame-board');
+                                this.bricks = $('#jsgame_box .jsgame-bricks');
+                                this.overlay = $('#jsgame_box .jsgame-overlay');
+                                this.output = $('#jsgame_box .jsgame-output');
+                                this.surplus = $('#jsgame_box .jsgame-hd i:eq(0)');
+                                this.times = $('#jsgame_box .jsgame-hd i:eq(1)');
+                                this.init();
+                                this.boardWidth = this.board.width();
+                                this.tb.append((function(x, y, str) {
+                                    str += '<tr>'
+                                    for (var i = 0; i < x; i++) {
+                                        str += '<td' + ((i + y) % 2 === 0 ? '' : ' class="gray"') + '></td>';
+                                    }
+                                    str += '</tr>';
+                                    if (--y > 0) {
+                                        return arguments.callee(x, y, str);
+                                    }
+                                    return str;
+                                })(this.bd.width() / this.step, this.bd.height() / this.step, ''));
+                                this.log('start', '<p>开始游戏</p><p>键盘 ← → 移动跳板</p><p>空格发射弹球</p>');
+                                this.status = 0;
+                            } else {
+                                this.init();
+                            }
+                        },
+                        run: function() {
+                            if (this.status === 1) {
+                                var position = this.ele.position(),
+                                    boardLeft,
+                                    brickObj,
+                                    brickObjsTemp,
+                                    ballOffset;
+                                if (position.top === this.maxTop) {
+                                    boardLeft = this.board.position().left;
+                                    if (position.left < boardLeft - this.ballWidth / 2 || position.left > boardLeft + this.boardWidth - this.ballWidth / 2) {
+                                        this.ele.animate({
+                                            top: this.bd.height()
+                                        }, function() {
+                                            ball.log('log', '<p>挑战失败，再来一次吧！</p><p>键盘 ← → 移动跳板</p><p>空格发射弹球</p>');
+                                            ball.status = 0;
+                                        });
+                                        this.status = -1;
+                                        return;
+                                    }
+                                }
+                                ballOffset = this.ele.offset();
+                                brickObjsTemp = ball.brickObjs.filter(function(k, v) {
+                                    var brickOffset = $(v).offset(),
+                                        bLeft,
+                                        bRight,
+                                        bTop,
+                                        bBottom;
+                                    if (ball.sideX > 0) {
+                                        $(v).data('x', ballOffset.left + ball.ballWidth === brickOffset.left);
+                                        bLeft = ballOffset.left + ball.ballWidth >= brickOffset.left;
+                                        bRight = ballOffset.left < brickOffset.left + ball.brickWidth;
+                                    } else {
+                                        $(v).data('x', ballOffset.left === brickOffset.left + ball.brickWidth);
+                                        bLeft = ballOffset.left > brickOffset.left;
+                                        bRight = ballOffset.left <= brickOffset.left + ball.brickWidth;
+                                    }
+                                    if (ball.sideY > 0) {
+                                        $(v).data('y', ballOffset.top + ball.ballHeight === brickOffset.top);
+                                        bTop = ballOffset.top + ball.ballHeight >= brickOffset.top;
+                                        bBottom = ballOffset.top < brickOffset.top + ball.brickHeight;
+                                    } else {
+                                        $(v).data('y', ballOffset.top === brickOffset.top + ball.brickHeight);
+                                        bTop = ballOffset.top > brickOffset.top;
+                                        bBottom = ballOffset.top <= brickOffset.top + ball.brickHeight;
+                                    }
+                                    return !(bLeft && bRight && bTop && bBottom);
+                                });
+                                if (brickObjsTemp.length !== ball.brickObjs.length) {
+                                    brickObj = ball.brickObjs.not(brickObjsTemp).animate({
+                                        opacity: 0
+                                    });
+                                    if (brickObjsTemp.length === 0) {
+                                        this.log('log', '<p>太牛了，要不要再来一次？</p><p>键盘 ← → 移动跳板</p><p>空格发射弹球</p>');
+                                        this.status = 0;
+                                        return;
+                                    }
+                                    ball.brickObjs = brickObjsTemp;
+                                    this.surplus.text(brickObjsTemp.length);
+                                    if (brickObj.data('x')) {
+                                        this.sideX *= -1;
+                                    }
+                                    if (brickObj.data('y')) {
+                                        this.sideY *= -1;
+                                    }
+                                    
+                                } else {
+                                    if (position.left === 0 || position.left === this.maxLeft - this.ballWidth) {
+                                        this.sideX *= -1;
+                                    }
+                                    if (position.top === 0 || position.top === this.maxTop) {
+                                        this.sideY *= -1;
+                                    }
+                                }
+                                if (position.top === this.maxTop) {
+                                    this.times.text(parseInt(this.times.text(), 10) + 1);
+                                }
+                                this.ele.css({
+                                    'top': position.top + this.sideY,
+                                    'left': position.left + this.sideX
+                                });
+                            }
+                            window.setTimeout(function() {
+                                ball.run();
+                            }, 5);
+                        },
+                        move: function(side) {
+                            if (this.status > 0) {
+                                if (side === 0) {
+                                    window.clearTimeout(this.timer);
+                                } else {
+                                    this.moveSide = side;
+                                    (function() {
+                                        var boardLeft = ball.board.position().left + ball.moveSide * ball.step;
+                                        if (boardLeft < 0 || boardLeft > ball.maxLeft - ball.boardWidth) {
+                                            return;
+                                        }
+                                        if (ball.status === 2) {
+                                            ball.ele.css('left', ball.ele.position().left + ball.moveSide * ball.step);
+                                        }
+                                        ball.board.css('left', boardLeft);
+                                        ball.timer = window.setTimeout(arguments.callee, 25);
+                                    })();
+                                }
+                            }
+                        },
+                        log: function(type, msg) {
+                            switch (type) {
+                                case 'start':
+                                    this.overlay.show();
+                                    this.output.html(msg).one('click', function() {
+                                        ball.overlay.hide();
+                                        ball.status = 2;
+                                    }).show();
+                                    break;
+                                case 'log':
+                                    this.overlay.show();
+                                    this.output.html(msg).one('click', function() {
+                                        ball.overlay.hide();
+                                        ball.start();
+                                        ball.status = 2;
+                                    });
+                                    break;
+                            }
+                        }
+                    },
+                    randomColor = function() {
+                        return '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).slice(-6);
+                    };
+
+                ball.start();
+                $('body').keydown(function(e) {
+                    if (ball.keyEnter) {
+                        return;
+                    }
+                    if (e.shiftKey || e.ctrlKey || e.altKey) {
+                        return;
+                    }
+                    ball.keyEnter = true;
+                    switch (e.which) {
+                        case 32:
+                            if (ball.status === 2) {
+                                ball.status = 1;
+                                ball.run();
+                                ball.times.text(1);
+                            }
+                            break;
+                        case 37:
+                            ball.move(-1);
+                            break;
+                        case 39:
+                            ball.move(1);
+                            break;
+                    }
+                }).keyup(function(e) {
+                    ball.keyEnter = false;
+                    ball.move(0);
+                });
+            })(window, jQuery);
+        </script>
+    </body>
+</html>
