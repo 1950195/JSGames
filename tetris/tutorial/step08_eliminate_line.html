@@ -9,8 +9,10 @@
         ul {list-style: none; display: table-row;}
         li {display: table-cell; height: 20px; width: 20px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;}
         li.active, li.pile {background-color: green;}
-        #playground ul:first-child li {border-top: 1px solid #ccc;}
-        #playground ul li:first-child {border-left: 1px solid #ccc;}
+        section::after {content: ""; display: block; clear: both;}
+        section > * {float: left; margin-right: 20px;}
+        #playground ul:first-child li, #nextTetris ul:first-child li {border-top: 1px solid #ccc;}
+        #playground ul li:first-child, #nextTetris ul li:first-child {border-left: 1px solid #ccc;}
     </style>
 </head>
 <body>
@@ -18,7 +20,10 @@
         <dl><dt>Count:</dt><dd id="count">0</dd></dl>
         <p id="msg"></p>
     </header>
-    <article id="playground"></article>
+    <section>
+        <article id="playground"></article>
+        <aside id="nextTetris"></aside>
+    </section>
     <script type="text/javascript" src="../jquery-2.1.4.min.js"></script>
     <script>
         (function(window, document, $, undefined) {
@@ -26,9 +31,11 @@
                 TOTAL_COLS = 10,
                 speed = 500,
                 tetris,
+                nextTetris,
                 timer,
                 count = 0,
                 $playground = $('#playground'),
+                $nextTetris = $('#nextTetris'),
                 $msg = $('#msg'),
                 $count = $('#count'),
                 genPlayground = function() {
@@ -47,6 +54,18 @@
                     }
 
                     $playground.html(strHtml);
+
+                    for (i = 0, strHtml = ''; i < 4; i++) {
+                        strHtml += '<ul>';
+
+                        for (j = 0; j < 4; j++) {
+                            strHtml += '<li></li>';
+                        }
+
+                        strHtml += '</ul>';
+                    }
+
+                    $nextTetris.html(strHtml);
                 },
                 cleanPlayground = function() {
                     $playground.find('.active').removeClass('active');
@@ -248,6 +267,13 @@
                 genTetris = function() {
                     return new Tetris(shapeList[Math.floor(Math.random() * shapeList.length)]).drawing();
                 },
+                showNextTetris = function() {
+                    $nextTetris.find('.pile').removeClass('pile');
+                    $.each(nextTetris.blocks, function() {
+                        console.log($nextTetris.find('ul:eq(' + (this.x + 3) + ') li:eq(' + (this.y - 3) + ')'));
+                        $nextTetris.find('ul:eq(' + (this.x + 3) + ') li:eq(' + (this.y - 3) + ')').addClass('pile');
+                    });
+                },
                 gameOver = function() {
                     return $.grep(tetris.blocks, function(block) {
                         return block.x < 0;
@@ -261,7 +287,9 @@
                             return;
                         }
                         eliminate();
-                        tetris = genTetris();
+                        tetris = nextTetris;
+                        nextTetris = genTetris();
+                        showNextTetris();
                     }
                 }
                 autoMoving = function() {
@@ -275,6 +303,8 @@
                 start = function() {
                     genPlayground();
                     tetris = genTetris(),
+                    nextTetris = genTetris(),
+                    showNextTetris();
                     timer = setTimeout(autoMoving, speed);
                 },
                 eliminate = function() {
