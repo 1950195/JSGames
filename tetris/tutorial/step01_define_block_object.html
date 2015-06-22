@@ -5,10 +5,10 @@
     <title>Step 1: Define Block Object</title>
     <style type="text/css">
         ul {list-style: none; display: table-row;}
-        li {display: table-cell; height: 20px; width: 20px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc}
-        li.active, li.pile {background-color: green}
-        #playground ul:first-child li {border-top: 1px solid #ccc}
-        #playground ul li:first-child {border-left: 1px solid #ccc}
+        li {display: table-cell; height: 20px; width: 20px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;}
+        li.active, li.pile {background-color: green;}
+        #playground ul:first-child li {border-top: 1px solid #ccc;}
+        #playground ul li:first-child {border-left: 1px solid #ccc;}
     </style>
 </head>
 <body>
@@ -17,9 +17,17 @@
     <script type="text/javascript" src="../jquery-2.1.4.min.js"></script>
     <script>
         (function(window, document, $, undefined) {
+            // To define the size of this game's playground: TOTAL_ROWS * TOTAL_COLS
             var TOTAL_ROWS = 20,
                 TOTAL_COLS = 10,
                 $playground = $('#playground'),
+
+                /**
+                 * To generate html of the game's playground
+                 *
+                 * @method genPlayground
+                 * @uses TOTAL_ROWS, TOTAL_COLS, $playground
+                 */
                 genPlayground = function() {
                     var strHtml = '',
                         i = 0,
@@ -37,15 +45,35 @@
 
                     $playground.html(strHtml);
                 },
-                // x, y: (0, 0) is (first row, first col)
+
+                /**
+                 * To define an object for every blocks, aother explanation is an object of <li> items
+                 *
+                 * @class Block
+                 * @constructor
+                 * @param {Number} x The row number of the playground, count from 0
+                 * @param {Number} y The col number of the playground, count from 0
+                 * @return {Block} The current instance of Block
+                 * @uses $playground
+                 */
                 Block = function(x, y) {
                     this.x = x;
                     this.y = y;
+
+                    /**
+                     * To display block in the playground
+                     *
+                     * @method drawing
+                     * @uses $playground
+                     * @chainable
+                     */
                     this.drawing = function() {
                         $playground.find('ul:eq(' + this.x + ') li:eq(' + this.y + ')').addClass('active');
+                        return this;
                     }
                 };
 
+            // Let's generate the playground
             genPlayground();
 
             // just to test the active block
