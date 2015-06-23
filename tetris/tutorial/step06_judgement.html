@@ -5,10 +5,10 @@
     <title>Step 6: Judgement</title>
     <style type="text/css">
         ul {list-style: none; display: table-row;}
-        li {display: table-cell; height: 20px; width: 20px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc}
-        li.active, li.pile {background-color: green}
-        #playground ul:first-child li {border-top: 1px solid #ccc}
-        #playground ul li:first-child {border-left: 1px solid #ccc}
+        li {display: table-cell; height: 20px; width: 20px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;}
+        li.active, li.pile {background-color: green;}
+        #playground ul:first-child li {border-top: 1px solid #ccc;}
+        #playground ul li:first-child {border-left: 1px solid #ccc;}
     </style>
 </head>
 <body>
@@ -17,9 +17,17 @@
     <script type="text/javascript" src="../jquery-2.1.4.min.js"></script>
     <script>
         (function(window, document, $, undefined) {
+            // To define the size of this game's playground: TOTAL_ROWS * TOTAL_COLS
             var TOTAL_ROWS = 20,
                 TOTAL_COLS = 10,
                 $playground = $('#playground'),
+
+                /**
+                 * To generate html of the game's playground
+                 *
+                 * @method genPlayground
+                 * @uses TOTAL_ROWS, TOTAL_COLS, $playground
+                 */
                 genPlayground = function() {
                     var strHtml = '',
                         i = 0,
@@ -37,29 +45,95 @@
 
                     $playground.html(strHtml);
                 },
+
+                /**
+                 * To clean the game's playground, reset all of the active blocks
+                 *
+                 * @method cleanPlayground
+                 * @uses $playground
+                 */
                 cleanPlayground = function() {
                     $playground.find('.active').removeClass('active');
                 },
-                // x, y: (0, 0) is (first row, first col)
+
+                /**
+                 * To define an object modle for every blocks, aother explanation is an object of <li> items
+                 *
+                 * @class Block
+                 * @constructor
+                 * @param {Number} x The row number of the playground, count from 0
+                 * @param {Number} y The col number of the playground, count from 0
+                 * @uses $playground
+                 */
                 Block = function(x, y) {
                     this.x = x;
                     this.y = y;
+
+                    /**
+                     * To display block in the playground
+                     *
+                     * @method drawing
+                     * @uses $playground
+                     * @chainable
+                     */
                     this.drawing = function() {
-                        if (this.x < 0) return;
-                        $playground.find('ul:eq(' + this.x + ') li:eq(' + this.y + ')').addClass('active');
+                        if (this.x >= 0) {
+                            $playground.find('ul:eq(' + this.x + ') li:eq(' + this.y + ')').addClass('active');
+                        }
+                        return this;
                     };
+
+                    /**
+                     * To clean block in the playground
+                     *
+                     * @method cleaning
+                     * @uses $playground
+                     * @chainable
+                     */
                     this.cleaning = function() {
-                        if (this.x < 0) return;
-                        $playground.find('ul:eq(' + this.x + ') li:eq(' + this.y + ')').removeClass('active');
+                        if (this.x >= 0) {
+                            $playground.find('ul:eq(' + this.x + ') li:eq(' + this.y + ')').removeClass('active');
+                        }
+                        return this;
                     };
+
+                    /**
+                     * To pile block in the playground
+                     *
+                     * @method pile
+                     * @uses $playground
+                     * @chainable
+                     */
                     this.pile = function() {
-                        if (this.x < 0) return;
-                        $playground.find('ul:eq(' + this.x + ') li:eq(' + this.y + ')').addClass('pile');
+                        if (this.x >= 0) {
+                            $playground.find('ul:eq(' + this.x + ') li:eq(' + this.y + ')').addClass('pile');
+                        }
+                        return this;
                     };
+
+                    /**
+                     * To move block in the playground
+                     *
+                     * @method moving
+                     * @param {Number} offsetX The row offset will be moving
+                     * @param {Number} offsetY The col offset will be moving
+                     * @chainable
+                     */
                     this.moving = function(offsetX, offsetY) {
                         this.x = this.x + offsetX;
                         this.y = this.y + offsetY;
+                        return this;
                     };
+
+                    /**
+                     * To vilidate next position can be moved or not
+                     *
+                     * @method moving
+                     * @param {Number} offsetX The row offset will be moving
+                     * @param {Number} offsetY The col offset will be moving
+                     * @return {Boolean} Result of validation
+                     * @uses $playground
+                     */
                     this.validate = function(offsetX, offsetY) {
                         var posX = this.x + offsetX,
                             posY = this.y + offsetY;
@@ -77,7 +151,14 @@
                         return true;
                     }
                 },
-                // blocks: Array of the block instance
+
+                /**
+                 * To define an object model for every tetris
+                 *
+                 * @class Tetris
+                 * @constructor
+                 * @param {Object} shape An object of shape
+                 */
                 Tetris = function(shape) {
                     this.blocks = convertShapeModelToBlocks(shape.model);
                     this.index = shape.index;
@@ -85,24 +166,52 @@
                     this.total = this.group.length;
                     this.offset = {x: 0, y: 0};
                     this.isEnd = false;
+
+                    /**
+                     * To display tetris in the playground
+                     *
+                     * @method drawing
+                     * @chainable
+                     */
                     this.drawing = function() {
                         $.each(this.blocks, function(index, block) {
                             block.drawing();
                         });
                         return this;
                     };
+
+                    /**
+                     * To clean tetris in the playground
+                     *
+                     * @method cleaning
+                     * @chainable
+                     */
                     this.cleaning = function() {
                         $.each(this.blocks, function(index, block) {
                             block.cleaning();
                         });
                         return this;
                     };
+
+                    /**
+                     * To pile tetris in the playground
+                     *
+                     * @method pile
+                     * @chainable
+                     */
                     this.pile = function() {
                         $.each(this.blocks, function(index, block) {
                             block.pile();
                         });
                         return this;
                     };
+
+                    /**
+                     * To adapt current tetris in the playground
+                     *
+                     * @method adapt
+                     * @chainable
+                     */
                     this.adapt = function() {
                         var offsetY = this.offset.y,
                             resetY = $.map(this.group[this.index], function(item) {
@@ -121,6 +230,13 @@
                         this.offset.y += resetY[0] > 0 ? resetY[0] : resetY.pop();
                         return this;
                     };
+
+                    /**
+                     * To rotate current tetris in the playground
+                     *
+                     * @method next
+                     * @chainable
+                     */
                     this.next = function() {
                         var index = this.index,
                             offsetX = this.offset.x,
@@ -149,6 +265,15 @@
                         this.blocks = newBlocks;
                         return this.drawing();
                     };
+
+                    /**
+                     * To move current tetris in the playground
+                     *
+                     * @method moving
+                     * @param {Number} offsetX The row offset will be moving
+                     * @param {Number} offsetY the col offset will be moving
+                     * @chainable
+                     */
                     this.moving = function(offsetX, offsetY) {
                         if (!this.validate(offsetX, offsetY)) {
                             if (offsetX > 0) {
@@ -165,12 +290,28 @@
                         this.offset.y += offsetY;
                         return this.drawing();
                     };
+
+                    /**
+                     * To vilidate next position can be moved or not
+                     *
+                     * @method validate
+                     * @param {Number} offsetX The row offset will be moving
+                     * @param {Number} offsetY The col offset will be moving
+                     * @return {Boolean} Result of validation
+                     */
                     this.validate = function(offsetX, offsetY) {
                         return $.grep(this.blocks, function(block) {
                             return !block.validate(offsetX, offsetY);
                         }).length === 0;
                     };
                 },
+
+                /**
+                 * To define all shapes of the tetri into an Four-dimensional array
+                 * One-dimensional: x, y of block
+                 * Two-dimensional:  to combine into a tetirs with several blocks
+                 * Three-dimensional: to rotate the tetris with a different angles
+                 */
                 shapeModels = [
                     [
                         [[-1, 4], [-1, 5], [0, 4], [0, 5]]
@@ -206,11 +347,24 @@
                         [[-2, 4], [-2, 5], [-1, 4], [0, 4]]
                     ]
                 ],
+
+                /**
+                 * to generate an array of the shape objects
+                 */
                 shapeList = $.map($.extend([], shapeModels), function(shapeModel) {
                     return $.map(shapeModel, function(item, index) {
                         return {model: item, index: index, group: shapeModel};
                     });
                 }),
+
+                /**
+                 * to convert a shape to an array of several blocks
+                 *
+                 * @method convertShapeToBlocks
+                 * @param {Array} shape An array of seveal {x, y}
+                 * @return {Array} An array of seveal blocks
+                 * @uses Block
+                 */
                 convertShapeModelToBlocks = function(model, offset) {
                     offset = offset || {x: 0, y: 0};
                     return $.map(model, function(item) {
@@ -218,6 +372,7 @@
                     });
                 };
 
+            // Let's generate the playground
             genPlayground();
 
             // just to test the active block
@@ -225,12 +380,14 @@
                 tetris = new Tetris(shapeList[index]).drawing(),
                 timer;
 
+            // running
             (function() {
                 if (!tetris.moving(1, 0).isEnd) {
                     timer = setTimeout(arguments.callee, 500);
                 }
             })();
 
+            // binding keydown event to listen the direction key has been press down
             $(document).on('keydown', function(e) {
                 if (tetris.isEnd || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
 
