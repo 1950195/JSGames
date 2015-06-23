@@ -78,6 +78,7 @@
                      */
                     this.drawing = function() {
                         $playground.find('ul:eq(' + this.x + ') li:eq(' + this.y + ')').addClass('active');
+                        return this;
                     }
                 },
 
@@ -101,6 +102,7 @@
                         $.each(blocks, function(index, block) {
                             block.drawing();
                         });
+                        return this;
                     };
                 },
 
